@@ -1,0 +1,16 @@
+syntax = "proto3";
+package Proto;
+option go_package = "/Proto";
+
+message Request{
+  string timestamp = 1;
+  int32 processID = 2;
+}
+
+message Response{
+}
+
+service BenchPressQueue{
+  rpc SendRequest(Request) returns (Response){}
+}
+
