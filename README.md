@@ -12,4 +12,6 @@ Open 3 terminal windows in DISYS_E02/Main/
 
 # Send request to do stuff
 1. Type "r" in the terminal to get the node to send a request to do stuff.
-2. The node will do stuff for seconds.
+2. You will then wait until it is your turn to do stuff.
+3. The node will then do stuff for 10 seconds.
+4. You can now enter "r" again
