@@ -11,5 +11,5 @@ Open 3 terminal windows in Main/
 3. Third window type "go run ./Main.go 3"
 
 # Send request to do stuff
-Type "r" in the terminal to get the node to send a request to do stuff
-The node will do stuff for seconds.
+1. Type "r" in the terminal to get the node to send a request to do stuff.
+2. The node will do stuff for seconds.
