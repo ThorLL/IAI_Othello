@@ -1,6 +1,6 @@
 # DISYS_E02
-Mandatory assignment 2 in DISYS.
-
+- Mandatory assignment 2 in DISYS.
+- Ricart & Agrawala algorithm is implemented.
 # The program
 The program must run three nodes which are predefined on localhost:8001, localhost:8002 and localhost:8003.
 
