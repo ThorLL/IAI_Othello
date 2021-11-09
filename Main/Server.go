@@ -16,7 +16,7 @@ type server struct {
 var allNodes = []string{"localhost:8001", "localhost:8002", "localhost:8003"}
 var otherNodes []string
 
-func setupServer() {
+func SetupServer() {
 	readArguments()
 	createClientConnectionString()
 	setupOtherNodes()

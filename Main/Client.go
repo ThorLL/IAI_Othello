@@ -19,7 +19,7 @@ const (
 	RELEASED State = 2
 )
 
-func setupClient() {
+func SetupClient() {
 	alive()
 }
 
