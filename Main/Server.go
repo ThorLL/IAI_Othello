@@ -2,11 +2,13 @@ package main
 
 import (
 	DISYS "DISYS/Proto"
+	"context"
 	"google.golang.org/grpc"
 	"log"
 	"net"
 	"os"
 	"strconv"
+	"time"
 )
 
 type server struct {
@@ -51,4 +53,24 @@ func initServer() {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
+}
+
+func (s server) SendRequest(_ context.Context, request *DISYS.Request) (*DISYS.Response, error) {
+	holdOf := true
+	for holdOf {
+		holdOf = state == HELD || (state == WANTED && ownRequestLower(request))
+	}
+	response := DISYS.Response{}
+	log.Printf("%v approved %v request", id, request.ProcessID)
+	return &response, nil
+}
+
+func ownRequestLower(otherRequest *DISYS.Request) (iAmLower bool) {
+	otherTime, _ := time.Parse(time.Layout, request.Timestamp)
+	myTime, _ := time.Parse(time.Layout, request.Timestamp)
+
+	if myTime.Equal(otherTime) {
+		return request.ProcessID < otherRequest.ProcessID
+	}
+	return myTime.Before(otherTime)
 }

@@ -45,7 +45,7 @@ func alive() {
 
 func multicast(request *DISYS.Request) {
 	state = WANTED
-	log.Printf("%v state is wanted", connectionString)
+	log.Printf("%v state is wanted", id)
 	var wg sync.WaitGroup
 	wg.Add(len(otherNodes))
 	for _, port := range otherNodes {
@@ -53,7 +53,7 @@ func multicast(request *DISYS.Request) {
 	}
 	wg.Wait()
 	state = HELD
-	log.Printf("%v state is held", connectionString)
+	log.Printf("%v state is held", id)
 	doStuff()
 }
 
@@ -67,7 +67,7 @@ func enterRequest(wg *sync.WaitGroup, address string, request *DISYS.Request) {
 	c := DISYS.NewBenchPressQueueClient(conn)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Hour)
 	defer cancel()
-	log.Printf("%v send request to %v", connectionString, address)
+	log.Printf("%v send request to %v", id, address)
 	_, err = c.SendRequest(ctx, request)
 
 	if err != nil {
@@ -76,29 +76,9 @@ func enterRequest(wg *sync.WaitGroup, address string, request *DISYS.Request) {
 	wg.Done()
 }
 
-func (s server) SendRequest(_ context.Context, request *DISYS.Request) (*DISYS.Response, error) {
-	holdOf := true
-	for holdOf {
-		holdOf = state == HELD || (state == WANTED && ownRequestLower(request))
-	}
-	response := DISYS.Response{}
-	log.Printf("%v Server sending response back - AKA done", connectionString)
-	return &response, nil
-}
-
 func doStuff() {
-	log.Printf("%v is doing stuff", connectionString)
+	log.Printf("%v is doing stuff", id)
 	time.Sleep(10 * time.Second)
 	state = RELEASED
-	log.Printf("%v is done doing stuff, a.k.a. RELEASED", connectionString)
-}
-
-func ownRequestLower(otherRequest *DISYS.Request) (iAmLower bool) {
-	otherTime, _ := time.Parse(time.Layout, request.Timestamp)
-	myTime, _ := time.Parse(time.Layout, request.Timestamp)
-
-	if myTime.Equal(otherTime) {
-		return request.ProcessID < otherRequest.ProcessID
-	}
-	return myTime.Before(otherTime)
+	log.Printf("%v is done doing stuff, a.k.a. RELEASED", id)
 }
