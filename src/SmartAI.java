@@ -9,12 +9,11 @@ public class SmartAI implements IOthelloAI{
     private int playerNumber;
     private int enemyNumber;
 
-    private static final double maMulti = 15;    //Move advantage
-    private static final double nMulti = 1.4;     //Nr of discs
-    private static final double ddMulti = 8;   //Disc difference
-    private static final double cMulti = 6;     //Corners
+    private static final double maMulti = 2;    //Move advantage
+    private static final double ddMulti = 1;   //Disc difference
+    private static final double cMulti = 1000;     //Corners
 
-    private static final int MAXDEPTH = 8;
+    private static final int MAXDEPTH = 10;
     public Position decideMove(GameState s){
         playerNumber = s.getPlayerInTurn();
         if (playerNumber == 1){
@@ -32,22 +31,22 @@ public class SmartAI implements IOthelloAI{
 
     private Position alphaBetaSearch(GameState s){
         var past = System.nanoTime();
-        ValueMovePair vmp = MaxValue(s,s,Integer.MIN_VALUE,Integer.MAX_VALUE,0);
+        ValueMovePair vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0);
         System.out.println("Time to get move: " + (System.nanoTime()-past)/1000000);
         return vmp.move;
     }
 
-    private ValueMovePair MaxValue(GameState s,GameState lastState,int a,int b,int depth){
+    private ValueMovePair MaxValue(GameState s,int a,int b,int depth){
         if (depth == MAXDEPTH || s.legalMoves().isEmpty()){
-            return new ValueMovePair(eval(s,lastState),null);
+            return new ValueMovePair(eval(s),null);
         }
         int v = Integer.MIN_VALUE;
         Position move = null;
 
         for (Position pos : s.legalMoves()) {
-            GameState game = new GameState(s.getBoard(),s.getPlayerInTurn());
+            GameState game = new GameState(s.getBoard(),playerNumber);
             game.insertToken(pos);
-            ValueMovePair vmp = MinValue(game,s,a,b,depth+1);
+            ValueMovePair vmp = MinValue(game,a,b,depth+1);
             vmp.move = pos;
             if(vmp.value>v){
                 v = vmp.value;
@@ -61,16 +60,16 @@ public class SmartAI implements IOthelloAI{
         return new ValueMovePair(v,move);
     }
 
-    private ValueMovePair MinValue(GameState s,GameState lastState,int a,int b,int depth){
+    private ValueMovePair MinValue(GameState s,int a,int b,int depth){
         if (depth == MAXDEPTH){
-            return new ValueMovePair(eval(s,lastState),null);
+            return new ValueMovePair(eval(s),null);
         }
         int v = Integer.MAX_VALUE;
         Position move = null;
         for (Position pos :s.legalMoves()) {
-            GameState game = new GameState(s.getBoard(),s.getPlayerInTurn());
+            GameState game = new GameState(s.getBoard(),enemyNumber);
             game.insertToken(pos);
-            ValueMovePair vmp = MaxValue(game,s,a,b,depth+1);
+            ValueMovePair vmp = MaxValue(game,a,b,depth+1);
             vmp.move = pos;
             if(vmp.value<v){
                 v = vmp.value;
@@ -85,45 +84,48 @@ public class SmartAI implements IOthelloAI{
         return new ValueMovePair(v,move);
     }
 
-    private int eval(GameState current,GameState last){
-        float moveAdvantage = getMovesAdvantage(current);
-        int discDifference = discDifferenceFromLastState(current,last);
-        int corners = cornerCount(current);
-        int n = current.countTokens()[playerNumber-1];
+    private int eval(GameState current){
+        double moveAdvantage = getMovesAdvantage(current);
+        double discDifference = discDifference(current);
+        double corners = cornerCount(current);
 
-        return (int) ( maMulti * moveAdvantage + nMulti * n + ddMulti * discDifference + cMulti * corners);
+        return (int)( maMulti * moveAdvantage + ddMulti * discDifference + cMulti * corners);
     }
 
-    private float getMovesAdvantage(GameState current){
-        int blackMoves = current.legalMoves().size();
+    private double getMovesAdvantage(GameState current){
+        if (current.getPlayerInTurn() == enemyNumber) current.changePlayer();
+        double playerMoves = current.legalMoves().size();
         current.changePlayer();
-        int whiteMoves = current.legalMoves().size();
+        double  enemyMoves = current.legalMoves().size();
         current.changePlayer();
-        return ((float) blackMoves) / (blackMoves + whiteMoves);
+        return (playerMoves - enemyMoves) / (enemyMoves + playerMoves + 1);
     }
 
-    private int discDifferenceFromLastState(GameState current, GameState last){
-        int blackDisc = current.countTokens()[playerNumber-1];
-        int whiteDisc = current.countTokens()[enemyNumber-1];
-        int boardSize = (int) Math.pow(current.getBoard().length,2);
-        int lastBlack = last.countTokens()[playerNumber-1];
-        int diff = (blackDisc - lastBlack)/(boardSize-(whiteDisc+blackDisc));
-
-        return diff;
+    private double discDifference(GameState current){
+        double playerDiscs = current.countTokens()[playerNumber-1];
+        double enemyDiscs = current.countTokens()[enemyNumber-1];
+        return (playerDiscs - enemyDiscs) / (enemyDiscs + playerDiscs);
     }
 
-    private int cornerCount(GameState s){
+    private double cornerCount(GameState s){
         int tl = s.getBoard()[0][0];
         int tr = s.getBoard()[0][s.getBoard().length-1];
         int bl = s.getBoard()[s.getBoard().length-1][0];
         int br = s.getBoard()[s.getBoard().length-1][s.getBoard().length-1];
 
-        int count = 0;
-        if(tl == playerNumber) {count ++;}
-        if(tr == playerNumber) {count ++;}
-        if(bl == playerNumber) {count ++;}
-        if(br == playerNumber) {count ++;}
-        return count;
+        var myCorners = 0.0;
+        var opCorners = 0.0;
+        if(tl == playerNumber) {myCorners ++;}
+        if(tr == playerNumber) {myCorners ++;}
+        if(bl == playerNumber) {myCorners ++;}
+        if(br == playerNumber) {myCorners ++;}
+
+        if(tl == enemyNumber) {opCorners ++;}
+        if(tr == enemyNumber) {opCorners ++;}
+        if(bl == enemyNumber) {opCorners ++;}
+        if(br == enemyNumber) {opCorners ++;}
+
+        return (myCorners - opCorners) / (myCorners + opCorners + 1);
     }
 
     private class ValueMovePair{
