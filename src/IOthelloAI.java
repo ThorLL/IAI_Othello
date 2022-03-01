@@ -13,6 +13,5 @@ public interface IOthelloAI {
 	 * Is only called when a move is possible, but feel free to return 
 	 * e.g. (-1, -1) if no moves are possible.
 	 */
-	public Position decideMove(GameState s);
-	
+	public Position decideMove(GameState s,ValueSet vs);
 }

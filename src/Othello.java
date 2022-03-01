@@ -76,27 +76,37 @@ public class Othello
         	printHelp(errMsg);
            	System.exit(1);
         }
-        
-        try{
-        	OthelloGUI g = new OthelloGUI(ai1, ai2, size, ai1 == null);
 
-        	// Setup of the frame containing the game
-        	JFrame f = new JFrame();
-        	f.setSize((size+2)*100,(size+2)*100);
-        	f.setTitle("Othello");
-        	f.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
-        	f.getContentPane().add(g);    
-        	f.setVisible(true);
+        //new OthelloAuto(8,args[0],args[1]);
+
+        try{
+            startGUI(ai1,ai2,size);
         }
         catch (IOException e){
-        	errMsg = "Images not found at " + System.getProperty("user.dir") + "\\imgs";
-        	err = true;
+            errMsg = "Images not found at " + System.getProperty("user.dir") + "\\imgs";
+            err = true;
         }
+
 
         if(err) {
         	printHelp(errMsg);
            	System.exit(1);
         }
+    }
+
+    private static void startGUI(IOthelloAI ai1,IOthelloAI ai2,int size) throws IOException {
+
+        OthelloGUI g = new OthelloGUI(ai1, ai2, size, ai1 == null);
+
+        // Setup of the frame containing the game
+        JFrame f = new JFrame();
+        f.setSize((size+2)*100,(size+2)*100);
+        f.setTitle("Othello");
+        f.setDefaultCloseOperation (JFrame.EXIT_ON_CLOSE);
+        f.getContentPane().add(g);
+        f.setVisible(true);
+
+
     }
 
     /**

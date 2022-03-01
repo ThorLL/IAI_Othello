@@ -138,12 +138,12 @@ public class OthelloGUI extends JComponent implements MouseListener
      */
     private Position getPlaceForNextToken(MouseEvent e){
     	if ( state.getPlayerInTurn() == 2 ) 
-			return ai2.decideMove(state);
+			return ai2.decideMove(state,new ValueSet(6,4,10));
 		else {
 			if ( humanPlayer )
 				return humanSelectedPlace(e);
 			else
-				return ai1.decideMove(state);
+				return ai1.decideMove(state,new ValueSet(3,0,20));
 		}
     }
 

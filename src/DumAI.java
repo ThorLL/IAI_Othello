@@ -11,12 +11,13 @@ public class DumAI implements IOthelloAI{
 	/**
 	 * Returns first legal move
 	 */
-	public Position decideMove(GameState s){
+	public Position decideMove(GameState s,ValueSet vs){
 		ArrayList<Position> moves = s.legalMoves();
 		if ( !moves.isEmpty() )
 			return moves.get(0);
 		else
 			return new Position(-1,-1);
 	}
-	
+
+
 }

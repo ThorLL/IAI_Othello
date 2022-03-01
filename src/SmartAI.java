@@ -3,31 +3,27 @@ public class SmartAI implements IOthelloAI{
     private int playerNumber;
     private int enemyNumber;
 
-    private static final int maMulti = 200;     //Move advantage
-    private static final int ddMulti = 1;       //Disc difference
-    private static final int cMulti = 1000;     //Corners
+    private static final int MAXDEPTH = 6;
 
-    private static final int MAXDEPTH = 8;
-    public Position decideMove(GameState s){
+    public Position decideMove(GameState s,ValueSet vs){
         playerNumber = s.getPlayerInTurn();
         enemyNumber = playerNumber == 1 ? 2 : 1;
-
-        Position move = alphaBetaSearch(s);
+        Position move = alphaBetaSearch(s,vs);
 
         return move == null ? new Position(-1, -1) : move;
     }
 
-    private Position alphaBetaSearch(GameState s) {
+    private Position alphaBetaSearch(GameState s,ValueSet vs) {
         var past = System.nanoTime();
 
-        var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0);
+        var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0,vs);
 
-        System.out.println("(Smart AI : player " + playerNumber +") \n Time to get move: " + (System.nanoTime()-past)/1000000 + "\n");
+        //System.out.println("(Smart AI : player " + playerNumber +") \n Time to get move: " + (System.nanoTime()-past)/1000000 + "\n");
         return vmp.move;
     }
 
-    private ValueMovePair MaxValue(GameState s,int a,int b,int depth) {
-        if (depth == MAXDEPTH || s.legalMoves().isEmpty()) return new ValueMovePair(eval(s),null);
+    private ValueMovePair MaxValue(GameState s,int a,int b,int depth,ValueSet vs) {
+        if (depth == MAXDEPTH || s.legalMoves().isEmpty()) return new ValueMovePair(eval(s,vs),null);
 
         int v = Integer.MIN_VALUE;
         Position move = null;
@@ -35,7 +31,7 @@ public class SmartAI implements IOthelloAI{
         for (Position pos : s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),playerNumber);
             game.insertToken(pos);
-            int value = MinValue(game, a, b, depth + 1);
+            int value = MinValue(game, a, b, depth + 1, vs);
             if(value > v){
                 v = value;
                 move = pos;
@@ -46,15 +42,15 @@ public class SmartAI implements IOthelloAI{
         return new ValueMovePair(v,move);
     }
 
-    private int MinValue(GameState s,int a,int b,int depth){
-        if (depth == MAXDEPTH) return eval(s);
+    private int MinValue(GameState s,int a,int b,int depth,ValueSet vs){
+        if (depth == MAXDEPTH) return eval(s,vs);
 
         int v = Integer.MAX_VALUE;
 
         for (Position pos :s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),enemyNumber);
             game.insertToken(pos);
-            int value = MaxValue(game,a,b,depth+1).value;
+            int value = MaxValue(game,a,b,depth+1,vs).value;
             if(value<v){
                 v = value;
                 b = Math.min(b,v);
@@ -64,11 +60,11 @@ public class SmartAI implements IOthelloAI{
         return v;
     }
 
-    private int eval(GameState current) {
+    private int eval(GameState current,ValueSet vs) {
         int ma = getMovesAdvantage(current);
         int dd = discDifference(current);
         int cc = cornerCount(current);
-        return maMulti * ma + ddMulti * dd + cMulti * cc;
+        return vs.get()[0] * ma + vs.get()[1] * dd + vs.get()[2] * cc;
     }
 
     private int getMovesAdvantage(GameState current){
