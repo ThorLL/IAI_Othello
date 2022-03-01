@@ -1,9 +1,13 @@
+import java.util.ArrayList;
+
 public class SmartAI implements IOthelloAI{
 
     private int playerNumber;
     private int enemyNumber;
 
-    private static final int maMulti = 2;    //Move advantage
+    private ArrayList<Long> times = new ArrayList<>();
+
+    private static final int maMulti = 200;    //Move advantage
     private static final int ddMulti = 1;   //Disc difference
     private static final int cMulti = 1000;     //Corners
 
@@ -13,13 +17,20 @@ public class SmartAI implements IOthelloAI{
         enemyNumber = playerNumber == 1 ? 2 : 1;
 
         Position move = alphaBetaSearch(s);
+
         return move == null ? new Position(-1, -1) : move;
     }
 
     private Position alphaBetaSearch(GameState s){
         var past = System.nanoTime();
-        ValueMovePair vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0);
-        System.out.println("Time to get move: " + (System.nanoTime()-past)/1000000);
+
+        var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0);
+
+        var elapsed = (System.nanoTime()-past)/1000000;
+        times.add(elapsed);
+        var sum = 0L;
+        for (var time : times) sum += time;
+        System.out.println("(Smart AI : player " + playerNumber +") \n Time to get move: " + elapsed + "\n Average time to get move : " + sum / times.size()+"\n");
         return vmp.move;
     }
 
@@ -32,8 +43,8 @@ public class SmartAI implements IOthelloAI{
         for (Position pos : s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),playerNumber);
             game.insertToken(pos);
-            int value = MinValue(game,a,b,depth+1).value;
-            if(value>v){
+            int value = MinValue(game, a, b, depth + 1).value;
+            if(value > v){
                 v = value;
                 move = pos;
                 a = Math.max(a,v);
@@ -67,8 +78,20 @@ public class SmartAI implements IOthelloAI{
         int moveAdvantage = getMovesAdvantage(current);
         int discDifference = discDifference(current);
         int corners = cornerCount(current);
-
         return maMulti * moveAdvantage + ddMulti * discDifference + cMulti * corners;
+    }
+
+    private void printBoardWithValue(int[][] board,int value){
+        System.out.println();
+        for (int [] row : board){
+            System.out.print("|");
+            for (int cell : row){
+                System.out.print(cell + "|");
+            }
+            System.out.println();
+        }
+        System.out.println();
+        System.out.println("Board value = " + value);
     }
 
     private int getMovesAdvantage(GameState current){
