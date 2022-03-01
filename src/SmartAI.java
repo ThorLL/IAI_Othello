@@ -1,6 +1,6 @@
 import java.util.ArrayList;
 
-public class AlphaBeta implements IOthelloAI{
+public class SmartAI implements IOthelloAI{
 
     private int playerNumber;
     private int enemyNumber;
@@ -11,15 +11,13 @@ public class AlphaBeta implements IOthelloAI{
     private static final int ddMulti = 1;       //Disc difference
     private static final int cMulti = 1000;     //Corners
 
-    private int counter = 0;
-
     private static final int MAXDEPTH = 8;
     public Position decideMove(GameState s){
         playerNumber = s.getPlayerInTurn();
         enemyNumber = playerNumber == 1 ? 2 : 1;
 
         Position move = alphaBetaSearch(s);
-        counter = 0;
+
         return move == null ? new Position(-1, -1) : move;
     }
 
@@ -42,9 +40,6 @@ public class AlphaBeta implements IOthelloAI{
         int v = Integer.MIN_VALUE;
         Position move = null;
 
-        counter++;
-        System.out.println(counter);
-
         for (Position pos : s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),playerNumber);
             game.insertToken(pos);
@@ -64,9 +59,6 @@ public class AlphaBeta implements IOthelloAI{
 
         int v = Integer.MAX_VALUE;
         Position move = null;
-
-        counter++;
-        System.out.println(counter);
 
         for (Position pos :s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),enemyNumber);
