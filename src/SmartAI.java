@@ -1,11 +1,7 @@
-import java.util.ArrayList;
-
 public class SmartAI implements IOthelloAI{
 
     private int playerNumber;
     private int enemyNumber;
-
-    private ArrayList<Long> times = new ArrayList<>();
 
     private static final int maMulti = 200;     //Move advantage
     private static final int ddMulti = 1;       //Disc difference
@@ -26,11 +22,7 @@ public class SmartAI implements IOthelloAI{
 
         var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0);
 
-        var elapsed = (System.nanoTime()-past)/1000000;
-        times.add(elapsed);
-        var sum = 0L;
-        for (var time : times) sum += time;
-        System.out.println("(AlphaBeta AI : player " + playerNumber +") \n Time to get move: " + elapsed + "\n Average time to get move : " + sum / times.size()+"\n");
+        System.out.println("(Smart AI : player " + playerNumber +") \n Time to get move: " + (System.nanoTime()-past)/1000000 + "\n");
         return vmp.move;
     }
 
@@ -43,7 +35,7 @@ public class SmartAI implements IOthelloAI{
         for (Position pos : s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),playerNumber);
             game.insertToken(pos);
-            int value = MinValue(game, a, b, depth + 1).value;
+            int value = MinValue(game, a, b, depth + 1);
             if(value > v){
                 v = value;
                 move = pos;
@@ -54,11 +46,10 @@ public class SmartAI implements IOthelloAI{
         return new ValueMovePair(v,move);
     }
 
-    private ValueMovePair MinValue(GameState s,int a,int b,int depth){
-        if (depth == MAXDEPTH) return new ValueMovePair(eval(s),null);
+    private int MinValue(GameState s,int a,int b,int depth){
+        if (depth == MAXDEPTH) return eval(s);
 
         int v = Integer.MAX_VALUE;
-        Position move = null;
 
         for (Position pos :s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),enemyNumber);
@@ -66,12 +57,11 @@ public class SmartAI implements IOthelloAI{
             int value = MaxValue(game,a,b,depth+1).value;
             if(value<v){
                 v = value;
-                move = pos;
                 b = Math.min(b,v);
             }
             if(v <= a) break;
         }
-        return new ValueMovePair(v,move);
+        return v;
     }
 
     private int eval(GameState current) {
