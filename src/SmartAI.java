@@ -3,15 +3,14 @@ public class SmartAI implements IOthelloAI{
     private int playerNumber;
     private int enemyNumber;
 
-    private static final int maMulti = 200;     //Move advantage
-    private static final int ddMulti = 1;       //Disc difference
-    private static final int cMulti = 1000;     //Corners
+    private static final int maMulti = 6;     //Move advantage
+    private static final int ddMulti = 4;       //Disc difference
+    private static final int cMulti = 10;     //Corners
 
-    private static final int MAXDEPTH = 8;
+    private static final int MAXDEPTH = 7;
     public Position decideMove(GameState s){
         playerNumber = s.getPlayerInTurn();
         enemyNumber = playerNumber == 1 ? 2 : 1;
-
         Position move = alphaBetaSearch(s);
 
         return move == null ? new Position(-1, -1) : move;
@@ -22,7 +21,7 @@ public class SmartAI implements IOthelloAI{
 
         var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0);
 
-        System.out.println("(Smart AI : player " + playerNumber +") \n Time to get move: " + (System.nanoTime()-past)/1000000 + "\n");
+        System.out.println("" + (System.nanoTime()-past)/1000000);
         return vmp.move;
     }
 
