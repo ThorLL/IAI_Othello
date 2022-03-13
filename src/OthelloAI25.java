@@ -1,11 +1,11 @@
-public class SmartAI implements IOthelloAI{
+public class OthelloAI25 implements IOthelloAI{
 
     private int playerNumber;
     private int enemyNumber;
 
     private static final int maMulti = 6;     //Move advantage
-    private static final int ddMulti = 4;     //Disc difference
-    private static final int cMulti = 10;     //Corners
+    private static final int ddMulti = 4;     //Disc advantage
+    private static final int cMulti = 10;     //Corner advantage
 
     private static final int MAXDEPTH = 7;
     public Position decideMove(GameState s){
