@@ -74,8 +74,8 @@ public class SmartAI implements IOthelloAI{
     // Evaluation function.
     private int eval(GameState current) {
         int ma = getMovesAdvantage(current);
-        int dd = discDifference(current);
-        int cc = cornerCount(current);
+        int dd = discAdvantage(current);
+        int cc = cornerAdvantage(current);
         return maMulti * ma + ddMulti * dd + cMulti * cc;
     }
 
@@ -89,14 +89,14 @@ public class SmartAI implements IOthelloAI{
     }
 
     // Returns how many disc Max has compared to Min taken into account the total amount of discs.
-    private int discDifference(GameState current){
+    private int discAdvantage(GameState current){
         int playerDiscs = current.countTokens()[playerNumber-1];
         int enemyDiscs = current.countTokens()[enemyNumber-1];
         return 100 * (playerDiscs - enemyDiscs) / (enemyDiscs + playerDiscs);
     }
 
     // Returns how many corners Max has compared to Min taken into account the total amount of corners.
-    private int cornerCount(GameState s){
+    private int cornerAdvantage(GameState s){
         int tl = s.getBoard()[0][0];
         int tr = s.getBoard()[0][s.getBoard().length-1];
         int bl = s.getBoard()[s.getBoard().length-1][0];
