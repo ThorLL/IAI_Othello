@@ -9,42 +9,50 @@ public class SmartAI implements IOthelloAI{
 
     private static final int MAXDEPTH = 7;
     public Position decideMove(GameState s){
-        playerNumber = s.getPlayerInTurn();
-        enemyNumber = playerNumber == 1 ? 2 : 1;
-        Position move = alphaBetaSearch(s);
+        playerNumber = s.getPlayerInTurn();         // Player number for MAX
+        enemyNumber = playerNumber == 1 ? 2 : 1;    // Player number for MIN
+        Position move = alphaBetaSearch(s);         // Calls alphaBetaSearch to find best move at current game state
 
         return move == null ? new Position(-1, -1) : move;
     }
 
     private Position alphaBetaSearch(GameState s) {
-        var past = System.nanoTime();
+        var past = System.nanoTime();         // Calculate time of search
 
-        var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0);
+        var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0); // Runs algorithm
 
         System.out.println("" + (System.nanoTime()-past)/1000000);
-        return vmp.move;
+        return vmp.move;    // returns best move found
     }
 
     private ValueMovePair MaxValue(GameState s,int a,int b,int depth) {
+        // If max depth is hit or there are no longer any legal moves, then evaluates game state
         if (depth == MAXDEPTH || s.legalMoves().isEmpty()) return new ValueMovePair(eval(s),null);
 
         int v = Integer.MIN_VALUE;
         Position move = null;
 
+        /*
+            Loops through all possible legal moves at the current game state for max.
+            At first, initializes a copy of the game state and afterwards takes actions on the current legal move.
+            Then calls MinValue on the new game state.
+            Returns the highest value (returned by MinValue).
+         */
         for (Position pos : s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),playerNumber);
             game.insertToken(pos);
             int value = MinValue(game, a, b, depth + 1);
             if(value > v){
                 v = value;
-                move = pos;
-                a = Math.max(a,v);
+                move = pos;         // updates move to the best possible move (highest value).
+                a = Math.max(a,v);  // updates alpha.
             }
-            if(v >= b) break;
+            if(v >= b) break;       // performs a beta cut if v is greater or equal to beta.
         }
         return new ValueMovePair(v,move);
     }
 
+    // Same as MaxValue except returns the lowest value and no move
     private int MinValue(GameState s,int a,int b,int depth){
         if (depth == MAXDEPTH) return eval(s);
 
@@ -63,6 +71,7 @@ public class SmartAI implements IOthelloAI{
         return v;
     }
 
+    // Evaluation function.
     private int eval(GameState current) {
         int ma = getMovesAdvantage(current);
         int dd = discDifference(current);
@@ -70,6 +79,7 @@ public class SmartAI implements IOthelloAI{
         return maMulti * ma + ddMulti * dd + cMulti * cc;
     }
 
+    // Returns how many moves Max has compared to Min taken into account the total amount of moves.
     private int getMovesAdvantage(GameState current){
         if (current.getPlayerInTurn() == enemyNumber) current.changePlayer();
         int playerMoves = current.legalMoves().size();
@@ -78,12 +88,14 @@ public class SmartAI implements IOthelloAI{
         return 100 * (playerMoves - enemyMoves) / (enemyMoves + playerMoves + 1);
     }
 
+    // Returns how many disc Max has compared to Min taken into account the total amount of discs.
     private int discDifference(GameState current){
         int playerDiscs = current.countTokens()[playerNumber-1];
         int enemyDiscs = current.countTokens()[enemyNumber-1];
         return 100 * (playerDiscs - enemyDiscs) / (enemyDiscs + playerDiscs);
     }
 
+    // Returns how many corners Max has compared to Min taken into account the total amount of corners.
     private int cornerCount(GameState s){
         int tl = s.getBoard()[0][0];
         int tr = s.getBoard()[0][s.getBoard().length-1];
@@ -96,6 +108,7 @@ public class SmartAI implements IOthelloAI{
         return 100 * (myCorners - opCorners) / (myCorners + opCorners + 1);
     }
 
+    // Counts player's corners.
     private int getPlayersCorners(int topLeft, int topRight, int bottomLeft, int bottomRight, int playerNumber) {
         int cornerCount = 0;
         if(topLeft == playerNumber) {cornerCount ++;}
@@ -105,6 +118,7 @@ public class SmartAI implements IOthelloAI{
         return cornerCount;
     }
 
+    // A simple tuple that contains (value, move) pairs
     private class ValueMovePair{
         int value;
         Position move;
