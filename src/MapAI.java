@@ -1,14 +1,17 @@
 import java.util.ArrayList;
+import java.util.HashMap;
 
-public class SmartAI implements IOthelloAI{
+public class MapAI implements IOthelloAI{
 
     private int playerNumber;
     private int enemyNumber;
-
+    private static ArrayList<Long> times = new ArrayList<>();
     private static final int maMulti = 6;     //Move advantage
     private static final int ddMulti = 4;     //Disc difference
     private static final int cMulti = 10;     //Corners
-    private static ArrayList<Long> times = new ArrayList<>();
+
+
+
     private static final int MAXDEPTH = 7;
     public Position decideMove(GameState s){
         playerNumber = s.getPlayerInTurn();         // Player number for MAX
@@ -21,15 +24,17 @@ public class SmartAI implements IOthelloAI{
     private Position alphaBetaSearch(GameState s) {
         var past = System.nanoTime();         // Calculate time of search
 
-        var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0); // Runs algorithm
+        var vmp = MaxValue(s,Integer.MIN_VALUE,Integer.MAX_VALUE,0,new HashMap<>()); // Runs algorithm
 
-        times.add((System.nanoTime()-past)/1000000);
+        var time = (System.nanoTime()-past)/1000000;
+        times.add(time);
         long avg = times.stream().mapToLong(i -> i).sum()/times.size();
-        System.out.println("Smart AI " + playerNumber + " " + (System.nanoTime()-past)/1000000 + " avg: " + avg);
+
+        System.out.println("Map AI " + playerNumber + " " + time + " avg: " + avg);
         return vmp.move;    // returns best move found
     }
 
-    private ValueMovePair MaxValue(GameState s,int a,int b,int depth) {
+    private ValueMovePair MaxValue(GameState s,int a,int b,int depth, HashMap<String,Integer> checked) {
         // If max depth is hit or there are no longer any legal moves, then evaluates game state
         if (depth == MAXDEPTH || s.legalMoves().isEmpty()) return new ValueMovePair(eval(s),null);
 
@@ -46,7 +51,14 @@ public class SmartAI implements IOthelloAI{
             GameState game = new GameState(s.getBoard(),playerNumber);
             game.insertToken(pos);
 
-            int value = MinValue(game, a, b, depth + 1);
+            String boardHash = getBoardHash(game);
+            int value;
+            if (checked.containsKey(boardHash)){
+                value = checked.get(boardHash);
+            }else{
+                value = MinValue(game, a, b, depth + 1,checked);
+                checked.put(boardHash,value);
+            }
 
             if(value > v){
                 v = value;
@@ -59,17 +71,24 @@ public class SmartAI implements IOthelloAI{
     }
 
     // Same as MaxValue except returns the lowest value and no move
-    private int MinValue(GameState s,int a,int b,int depth){
+    private int MinValue(GameState s,int a,int b,int depth,HashMap<String,Integer> checked){
         if (depth == MAXDEPTH) return eval(s);
 
         int v = Integer.MAX_VALUE;
-
 
         for (Position pos :s.legalMoves()) {
             GameState game = new GameState(s.getBoard(),enemyNumber);
             game.insertToken(pos);
 
-            int value = MaxValue(game, a, b, depth + 1).value;
+            String boardHash = getBoardHash(game);
+            int value;
+            if (checked.containsKey(boardHash)){
+                value = checked.get(boardHash);
+            }else{
+                value = MaxValue(game,a,b,depth+1,checked).value;
+                checked.put(boardHash,value);
+            }
+
             if(value<v){
                 v = value;
                 b = Math.min(b,v);
@@ -124,6 +143,13 @@ public class SmartAI implements IOthelloAI{
         if(bottomLeft == playerNumber) {cornerCount ++;}
         if(bottomRight == playerNumber) {cornerCount ++;}
         return cornerCount;
+    }
+
+    private String getBoardHash(GameState s){
+        StringBuilder str = new StringBuilder();
+        var board = s.getBoard();
+        for (var row : board ) for (var cell : row) str.append(cell);
+        return str.toString();
     }
 
     // A simple tuple that contains (value, move) pairs
