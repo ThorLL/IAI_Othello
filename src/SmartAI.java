@@ -4,7 +4,7 @@ public class SmartAI implements IOthelloAI{
     private int enemyNumber;
 
     private static final int maMulti = 6;     //Move advantage
-    private static final int ddMulti = 4;       //Disc difference
+    private static final int ddMulti = 4;     //Disc difference
     private static final int cMulti = 10;     //Corners
 
     private static final int MAXDEPTH = 7;
